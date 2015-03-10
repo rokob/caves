@@ -1,4 +1,5 @@
-(ns caves.world)
+(ns caves.world
+  (:use [caves.coords :only [neighbors]]))
 
 (def world-size [160 50])
 
@@ -86,4 +87,9 @@
 (defn is-empty? [world coord]
   (and (#{:floor} (get-tile-kind world coord))
        (not (get-entity-at world coord))))
+
+(defn find-empty-neighbor [world coord]
+  (let [candidates (filter #(is-empty? world %) (neighbors coord))]
+    (when (seq candidates)
+      (rand-nth candidates))))
 

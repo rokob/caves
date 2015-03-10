@@ -27,7 +27,7 @@
   (s/put-string screen 0 0 "Sorry, better luck next time.")
   (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
 
-(defn draw-world [screen vcols vrows start-x start-y end-x end-y tiles]
+(defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
   (doseq [[vrow-idx mrow-idx] (map vector
                                    (range 0 vrows)
                                    (range start-y end-y))
@@ -43,11 +43,16 @@
         info (str info " start: [" start-x "-" start-y "]")]
     (s/put-string screen 0 hud-row info)))
 
-(defn draw-player [screen start-x start-y player]
+(defn draw-entity [screen start-x start-y {:keys [location glyph color]}]
+  (let [[entity-x entity-y] location
+        x (- entity-x start-x)
+        y (- entity-y start-y)]
+    (s/put-string screen x y glyph {:fg color})))
+
+(defn highlight-player [screen start-x start-y player]
   (let [[player-x player-y] (:location player)
         x (- player-x start-x)
         y (- player-y start-y)]
-    (s/put-string screen x y (:glyph player) {:fg :white})
     (s/move-cursor screen x y)))
 
 (defn get-viewport-coords [game location vcols vrows]
@@ -78,9 +83,11 @@
         vcols cols
         vrows (dec rows)
         [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
-    (draw-world screen vcols vrows start-x start-y end-x end-y tiles)
-    (draw-player screen start-x start-y player)
-    (draw-hud screen game start-x start-y)))
+    (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+    (doseq [entity (vals entities)]
+      (draw-entity screen start-x start-y entity))
+    (draw-hud screen game start-x start-y)
+    (highlight-player screen start-x start-y player)))
 
 (defn draw-game [game screen]
   (clear-screen screen)

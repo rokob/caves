@@ -59,6 +59,8 @@
         world (nth (iterate smooth-world world) 3)]
     world))
 
+;; --- Helper Functions
+
 (defn get-tile [world coord]
   (get-tile-from-tiles (:tiles world) coord))
 
@@ -76,4 +78,12 @@
     (if (#{:floor} (get-tile-kind world coord))
       coord
       (recur (random-coordinate)))))
+
+(defn get-entity-at [world coord]
+  (first (filter #(= coord (:location %))
+                 (vals (:entities world)))))
+
+(defn is-empty? [world coord]
+  (and (#{:floor} (get-tile-kind world coord))
+       (not (get-entity-at world coord))))
 

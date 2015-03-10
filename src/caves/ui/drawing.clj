@@ -36,15 +36,22 @@
             :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
       (s/put-string screen vcol-idx vrow-idx glyph {:fg color}))))
 
-(defn draw-crosshairs [screen vcols vrows]
-  (let [crosshair-x (int (/ vcols 2))
-        crosshair-y (int (/ vrows 2))]
-      (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
-      (s/move-cursor screen crosshair-x crosshair-y)))
+(defn draw-hud [screen game start-x start-y]
+  (let [hud-row (dec (second screen-size))
+        [x y] (get-in game [:world :player :location])
+        info (str "loc: [" x "-" y "]")
+        info (str info " start: [" start-x "-" start-y "]")]
+    (s/put-string screen 0 hud-row info)))
 
-(defn get-viewport-coords [game vcols vrows]
-  (let [location (:location game)
-        [center-x center-y] location
+(defn draw-player [screen start-x start-y player]
+  (let [[player-x player-y] (:location player)
+        x (- player-x start-x)
+        y (- player-y start-y)]
+    (s/put-string screen x y (:glyph player) {:fg :white})
+    (s/move-cursor screen x y)))
+
+(defn get-viewport-coords [game location vcols vrows]
+  (let [[center-x center-y] location
         tiles (:tiles (:world game))
         map-rows (count tiles)
         map-cols (count (first tiles))
@@ -65,13 +72,14 @@
 
 (defmethod draw-ui :play [ui game screen]
   (let [world (:world game)
-        tiles (:tiles world)
+        {:keys [tiles player]} world
         [cols rows] screen-size
         vcols cols
         vrows (dec rows)
-        [start-x start-y end-x end-y] (get-viewport-coords game vcols vrows)]
+        [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
     (draw-world screen vcols vrows start-x start-y end-x end-y tiles)
-    (draw-crosshairs screen vcols vrows)))
+    (draw-player screen start-x start-y player)
+    (draw-hud screen game start-x start-y)))
 
 (defn draw-game [game screen]
   (clear-screen screen)

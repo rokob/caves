@@ -18,7 +18,9 @@
     (when (seq uis)
       (draw-game game screen)
       (if (nil? input)
-        (recur (get-input (update-in game [:world] tick-all) screen))
+        (let [game (update-in game [:world] tick-all)]
+          (draw-game game screen)
+          (recur (get-input game screen)))
         (recur (process-input (dissoc game :input) input))))))
 
 (defn new-game []
@@ -26,6 +28,7 @@
 
 (defn main
   "Main entry point which handles different screen types" 
+  ([] (main :swing false))
   ([screen-type] (main screen-type false))
   ([screen-type block?]
    (letfn [(go []

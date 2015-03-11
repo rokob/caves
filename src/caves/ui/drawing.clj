@@ -1,5 +1,6 @@
 (ns caves.ui.drawing
-  (:require [lanterna.screen :as s]))
+  (:require [lanterna.screen :as s]
+            [clojure.string :as string]))
 
 (def screen-size [80 24])
 
@@ -7,7 +8,7 @@
   "Helper method to wipe the screen"
   [screen]
   (let [[cols rows] screen-size
-        blank (apply str (repeat cols \space))]
+        blank (string/join (repeat cols \space))]
     (doseq [row (range rows)]
       (s/put-string screen 0 row blank))))
 
